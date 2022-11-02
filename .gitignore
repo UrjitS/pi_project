@@ -1,0 +1,8 @@
+# Project exclude paths
+/client/cmake-build-debug/
+/server/cmake-build-debug/
+/proxy/cmake-build-debug/
+
+/client/.idea/
+/server/.idea/
+/proxy/.idea/
