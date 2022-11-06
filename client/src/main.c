@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
     {
 
         // Custom copy method for sending data packet to server.
+        // TODO Use the button code here and send it to copy function
         copy(STDIN_FILENO, opts.fd_in,  opts.server_addr);
     }
 

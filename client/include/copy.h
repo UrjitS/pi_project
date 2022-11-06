@@ -9,6 +9,8 @@ struct data_packet {
     int data_flag;
     int ack_flag;
     int sequence_flag;
+    int clockwise;
+    int counter_clockwise;
     char *data;
 };
 
