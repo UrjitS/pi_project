@@ -6,6 +6,7 @@ project(udp_client
         LANGUAGES C)
 
 set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_FLAGS "-lwiringPi")
 
 set(SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
@@ -73,7 +74,6 @@ if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
     #    add_compile_options("-O2")
     add_compile_options("-Wcast-align"
             "-Wunsuffixed-float-constants"
-            "-lwiringPi"
             "-Warith-conversion"
             "-Wcast-align=strict"
             "-Wunsafe-loop-optimizations"

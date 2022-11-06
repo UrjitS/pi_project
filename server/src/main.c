@@ -11,7 +11,6 @@
 #include <sys/socket.h>
 
 #include <wiringPi.h>
-#include <stdio.h>
 
 #define MotorPin1       0
 #define MotorPin2       2
@@ -68,8 +67,12 @@ int main(int argc, char *argv[])
     options_process(&opts);
 
     // If server IP is given, run loop to listen to self.
-    if(opts.ip_server && wiringPiSetup() == -1)
+    if(opts.ip_server)
     {
+        if(wiringPiSetup() == -1){
+            printf("setup wiringPi failed !");
+            return 1;
+        }
 
         pinMode(MotorPin1, OUTPUT);
         pinMode(MotorPin2, OUTPUT);
@@ -83,14 +86,21 @@ int main(int argc, char *argv[])
             read_bytes(opts.fd_in, &serverInformation);
             dataPacket = dp_deserialize(serverInformation.bytes_read_from_socket, serverInformation.struct_message_data);
             process_packet(dataPacket, &serverInformation);
+            if (dataPacket->clockwise) {
+                printf("Clockwise\n");
+                digitalWrite(MotorEnable, HIGH);
+                digitalWrite(MotorPin1, HIGH);
+                digitalWrite(MotorPin2, LOW);
+            }
+
+            if (dataPacket->counter_clockwise) {
+                printf("Anti-clockwise\n");
+                digitalWrite(MotorEnable, HIGH);
+                digitalWrite(MotorPin1, LOW);
+                digitalWrite(MotorPin2, HIGH);
+            }
             send_ack_packet(dataPacket, &serverInformation.from_addr, opts.fd_in);
 
-            printf("Stop\n");
-            delay(100);
-            digitalWrite(MotorEnable, LOW);
-            for(int i = 0; i < 3; i++){
-                delay(1000);
-            }
         }
     } else {
         printf("Set up failed\n");
@@ -125,19 +135,7 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
             printf("CClock: %d \n", dataPacket->counter_clockwise);
             printf("Data: %s \n", dataPacket->data);
 
-            if (dataPacket->clockwise) {
-                printf("Clockwise\n");
-                digitalWrite(MotorEnable, HIGH);
-                digitalWrite(MotorPin1, HIGH);
-                digitalWrite(MotorPin2, LOW);
-            }
 
-            if (dataPacket->counter_clockwise) {
-                printf("Anti-clockwise\n");
-                digitalWrite(MotorEnable, HIGH);
-                digitalWrite(MotorPin1, LOW);
-                digitalWrite(MotorPin2, HIGH);
-            }
 
         }
     }
@@ -231,6 +229,12 @@ static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockad
 
     printf("Sent ack\n");
     printf("\n");
+    printf("Stop\n");
+    delay(100);
+    digitalWrite(MotorEnable, LOW);
+    for(int i = 0; i < 3; i++){
+        delay(1000);
+    }
 }
 
 /**
