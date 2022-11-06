@@ -73,6 +73,7 @@ if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
     #    add_compile_options("-O2")
     add_compile_options("-Wcast-align"
             "-Wunsuffixed-float-constants"
+            "-lwiringPi"
             "-Warith-conversion"
             "-Wcast-align=strict"
             "-Wunsafe-loop-optimizations"
