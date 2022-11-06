@@ -9,12 +9,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
-
-#include <wiringPi.h>
-
-#define MotorPin1       0
-#define MotorPin2       2
-#define MotorEnable     3
 #define BUF_LEN 1024
 #define DEFAULT_PORT 5020
 
@@ -35,11 +29,9 @@ struct server_information
 
 
 struct data_packet {
-    char data_flag;
-    char ack_flag;
+    int data_flag;
+    int ack_flag;
     int sequence_flag;
-    char clockwise;
-    char counter_clockwise;
     char *data;
 };
 
@@ -69,15 +61,6 @@ int main(int argc, char *argv[])
     // If server IP is given, run loop to listen to self.
     if(opts.ip_server)
     {
-        if(wiringPiSetup() == -1){
-            printf("setup wiringPi failed !");
-            return 1;
-        }
-
-        pinMode(MotorPin1, OUTPUT);
-        pinMode(MotorPin2, OUTPUT);
-        pinMode(MotorEnable, OUTPUT);
-
         running = 1;
 
         // Continues loop to keep listening to self.
@@ -86,24 +69,8 @@ int main(int argc, char *argv[])
             read_bytes(opts.fd_in, &serverInformation);
             dataPacket = dp_deserialize(serverInformation.bytes_read_from_socket, serverInformation.struct_message_data);
             process_packet(dataPacket, &serverInformation);
-            if (dataPacket->clockwise == '1') {
-                printf("Clockwise\n");
-                digitalWrite(MotorEnable, HIGH);
-                digitalWrite(MotorPin1, HIGH);
-                digitalWrite(MotorPin2, LOW);
-            }
-
-            if (dataPacket->counter_clockwise == '1') {
-                printf("Anti-clockwise\n");
-                digitalWrite(MotorEnable, HIGH);
-                digitalWrite(MotorPin1, LOW);
-                digitalWrite(MotorPin2, HIGH);
-            }
             send_ack_packet(dataPacket, &serverInformation.from_addr, opts.fd_in);
-
         }
-    } else {
-        printf("Set up failed\n");
     }
     cleanup(&opts, &serverInformation);
     return EXIT_SUCCESS;
@@ -118,7 +85,7 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
     printf("Processing packet \n");
 
     // Confirm it is a new packet to be processed before processing.
-    if (dataPacket->data_flag == '1' && dataPacket->ack_flag == '0') {
+    if (dataPacket->data_flag && !dataPacket->ack_flag) {
         if (serverInformation->previous_sequence_number != dataPacket->sequence_flag) {
             // Update server side information.
             serverInformation->previous_sequence_number = dataPacket->sequence_flag;
@@ -126,17 +93,10 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
 
             // Update previous message sent by the other machine.
             memmove(serverInformation->previous_message, dataPacket->data, strlen(dataPacket->data));
-
-            // TODO send input to r-pie
-            printf("Data Flag: %c \n", dataPacket->data_flag);
-            printf("Ack: %c \n", dataPacket->ack_flag);
-            printf("Seq: %d \n", dataPacket->sequence_flag);
-            printf("Clock: %c \n", dataPacket->clockwise);
-            printf("CClock: %c \n", dataPacket->counter_clockwise);
+            printf("Data Flag: %d \n", dataPacket->data_flag);
+            printf("Ack: %d \n", dataPacket->ack_flag);
+            printf("Seq: %d \n", dataPacket->sequence_flag); // check to see if the seq number was just currently received
             printf("Data: %s \n", dataPacket->data);
-
-
-
         }
     }
 
@@ -156,14 +116,11 @@ static void send_ack_packet(const struct data_packet * dataPacket, struct sockad
     memset(&acknowledgement_packet, 0, sizeof(struct data_packet)); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     // Construct acknowledgement packet before sending
     // Data flag set to 0
-    acknowledgement_packet.data_flag = '0';
+    acknowledgement_packet.data_flag = 0;
     // Ack flag set to 1
-    acknowledgement_packet.ack_flag = '1';
+    acknowledgement_packet.ack_flag = 1;
     // Alternate sequence number
     acknowledgement_packet.sequence_flag = dataPacket->sequence_flag;
-
-    acknowledgement_packet.clockwise = '0';
-    acknowledgement_packet.counter_clockwise = '0';
 
     acknowledgement_packet.data = malloc(strlen(dataPacket->data));
     acknowledgement_packet.data = dataPacket->data;
@@ -229,12 +186,6 @@ static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockad
 
     printf("Sent ack\n");
     printf("\n");
-    printf("Stop\n");
-    delay(100);
-    digitalWrite(MotorEnable, LOW);
-    for(int i = 0; i < 3; i++){
-        delay(1000);
-    }
 }
 
 /**
@@ -261,17 +212,9 @@ static struct data_packet *dp_deserialize(ssize_t nRead, char * data_buffer)
     memcpy(&x->sequence_flag, &data_buffer[count], sizeof(x->sequence_flag));
     count += sizeof(x->sequence_flag);
 
-    memcpy(&x->clockwise, &data_buffer[count], sizeof(x->clockwise));
-    count += sizeof(x->clockwise);
-
-    memcpy(&x->counter_clockwise, &data_buffer[count], sizeof(x->counter_clockwise));
-    count += sizeof(x->counter_clockwise);
-
-//    x->data_flag = ntohs(x->data_flag);
-//    x->ack_flag = ntohs(x->ack_flag);
+    x->data_flag = ntohs(x->data_flag);
+    x->ack_flag = ntohs(x->ack_flag);
     x->sequence_flag = ntohs(x->sequence_flag);
-//    x->clockwise = ntohs(x->clockwise);
-//    x->counter_clockwise = ntohs(x->counter_clockwise);
 
     len = nRead - count;
 
@@ -293,22 +236,18 @@ static uint8_t *dp_serialize(const struct data_packet *ackPacket, size_t *size)
     uint8_t *bytes;
     size_t count;
     size_t len;
-    char data_flag_number;
-    char ack_flag_number;
+    int data_flag_number;
+    int ack_flag_number;
     int sequence_flag_number;
-    char clockwise;
-    char counter_clockwise;
 
     len = strlen(ackPacket->data);
 
-    *size = sizeof(ackPacket->data_flag) + sizeof(ackPacket->ack_flag) + sizeof(ackPacket->sequence_flag) + sizeof(ackPacket->clockwise) + sizeof(ackPacket->counter_clockwise) + len;
+    *size = sizeof(ackPacket->data_flag) + sizeof(ackPacket->ack_flag) + sizeof(ackPacket->sequence_flag) + len;
     bytes = malloc(*size);
     // Make network byte order
-//    data_flag_number = htons(ackPacket->data_flag);
-//    ack_flag_number = htons(ackPacket->ack_flag);
+    data_flag_number = htons(ackPacket->data_flag);
+    ack_flag_number = htons(ackPacket->ack_flag);
     sequence_flag_number = htons(ackPacket->sequence_flag);
-//    clockwise = htons(ackPacket->clockwise);
-//    counter_clockwise = htons(ackPacket->counter_clockwise);
 
     count = 0;
 
@@ -321,12 +260,6 @@ static uint8_t *dp_serialize(const struct data_packet *ackPacket, size_t *size)
 
     memcpy(&bytes[count], &sequence_flag_number, sizeof(sequence_flag_number));
     count += sizeof(sequence_flag_number);
-
-    memcpy(&bytes[count], &clockwise, sizeof(clockwise));
-    count += sizeof(clockwise);
-
-    memcpy(&bytes[count], &counter_clockwise, sizeof(counter_clockwise));
-    count += sizeof(counter_clockwise);
 
     memcpy(&bytes[count], ackPacket->data, len);
 

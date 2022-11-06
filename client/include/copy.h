@@ -6,14 +6,11 @@
 
 // Custom struct for confirmation and sequence between client/server.
 struct data_packet {
-    char data_flag;
-    char ack_flag;
+    int data_flag;
+    int ack_flag;
     int sequence_flag;
-    char clockwise;
-    char counter_clockwise;
     char *data;
 };
-
 /**
  * For sending information to another machine.
  * @param from_fd File Descriptor of source.
