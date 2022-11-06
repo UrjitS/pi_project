@@ -51,16 +51,16 @@ void copy(int from_fd, int to_fd, struct sockaddr_in server_addr)
     {
         // Construct data packet before using sento
         // Data flag set to 1
-        dataPacket.data_flag = 1;
+        dataPacket.data_flag = '1';
         // Ack flag set to 0
-        dataPacket.ack_flag = 0;
+        dataPacket.ack_flag = '0';
         // Alternate sequence number
         sequence = !sequence;
         dataPacket.sequence_flag = sequence;
 
         // TODO Set using button
-        dataPacket.clockwise = 1;
-        dataPacket.counter_clockwise = 0;
+        dataPacket.clockwise = '0';
+        dataPacket.counter_clockwise = '1';
 
         // Get data
         buffer[bytesRead-1] = '\0';
@@ -163,11 +163,11 @@ static uint8_t *dp_serialize(const struct data_packet *x, size_t *size)
     uint8_t *bytes;
     size_t count;
     size_t len;
-    int data_flag_number;
-    int ack_flag_number;
+    char data_flag_number;
+    char ack_flag_number;
     int sequence_flag_number;
-    int clockwise;
-    int counter_clockwise;
+    char clockwise;
+    char counter_clockwise;
 
     len = strlen(x->data);
 
@@ -176,12 +176,12 @@ static uint8_t *dp_serialize(const struct data_packet *x, size_t *size)
     bytes = malloc(*size);
 
     // Make network byte order
-    data_flag_number = htons(x->data_flag);
-    // ACK/SEQ for reliable UDP converted to network bytes.
-    ack_flag_number = htons(x->ack_flag);
+//    data_flag_number = htons(x->data_flag);
+//    // ACK/SEQ for reliable UDP converted to network bytes.
+//    ack_flag_number = htons(x->ack_flag);
     sequence_flag_number = htons(x->sequence_flag);
-    clockwise = htons(x->clockwise);
-    counter_clockwise = htons(x->counter_clockwise);
+//    clockwise = htons(x->clockwise);
+//    counter_clockwise = htons(x->counter_clockwise);
 
     count = 0;
 
@@ -233,11 +233,11 @@ static struct data_packet *dp_deserialize(ssize_t nRead, char * data_buffer)
 
     memcpy(&dataPacketRecieved->counter_clockwise, &data_buffer[count], sizeof(dataPacketRecieved->counter_clockwise));
 
-    dataPacketRecieved->data_flag = ntohs(dataPacketRecieved->data_flag);
-    dataPacketRecieved->ack_flag = ntohs(dataPacketRecieved->ack_flag);
+//    dataPacketRecieved->data_flag = ntohs(dataPacketRecieved->data_flag);
+//    dataPacketRecieved->ack_flag = ntohs(dataPacketRecieved->ack_flag);
     dataPacketRecieved->sequence_flag = ntohs(dataPacketRecieved->sequence_flag);
-    dataPacketRecieved->clockwise = ntohs(dataPacketRecieved->clockwise);
-    dataPacketRecieved->counter_clockwise = ntohs(dataPacketRecieved->counter_clockwise);
+//    dataPacketRecieved->clockwise = ntohs(dataPacketRecieved->clockwise);
+//    dataPacketRecieved->counter_clockwise = ntohs(dataPacketRecieved->counter_clockwise);
 
     return dataPacketRecieved;
 }
