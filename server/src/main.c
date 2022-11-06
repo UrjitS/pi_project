@@ -32,6 +32,8 @@ struct data_packet {
     int data_flag;
     int ack_flag;
     int sequence_flag;
+    int clockwise;
+    int counter_clockwise;
     char *data;
 };
 
@@ -95,7 +97,9 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
             memmove(serverInformation->previous_message, dataPacket->data, strlen(dataPacket->data));
             printf("Data Flag: %d \n", dataPacket->data_flag);
             printf("Ack: %d \n", dataPacket->ack_flag);
-            printf("Seq: %d \n", dataPacket->sequence_flag); // check to see if the seq number was just currently received
+            printf("Seq: %d \n", dataPacket->sequence_flag);
+            printf("Clock: %d \n", dataPacket->clockwise);
+            printf("CClock: %d \n", dataPacket->counter_clockwise);
             printf("Data: %s \n", dataPacket->data);
         }
     }
@@ -121,6 +125,9 @@ static void send_ack_packet(const struct data_packet * dataPacket, struct sockad
     acknowledgement_packet.ack_flag = 1;
     // Alternate sequence number
     acknowledgement_packet.sequence_flag = dataPacket->sequence_flag;
+
+    acknowledgement_packet.clockwise = -1;
+    acknowledgement_packet.counter_clockwise = -1;
 
     acknowledgement_packet.data = malloc(strlen(dataPacket->data));
     acknowledgement_packet.data = dataPacket->data;
@@ -212,9 +219,17 @@ static struct data_packet *dp_deserialize(ssize_t nRead, char * data_buffer)
     memcpy(&x->sequence_flag, &data_buffer[count], sizeof(x->sequence_flag));
     count += sizeof(x->sequence_flag);
 
+    memcpy(&x->clockwise, &data_buffer[count], sizeof(x->clockwise));
+    count += sizeof(x->clockwise);
+
+    memcpy(&x->counter_clockwise, &data_buffer[count], sizeof(x->counter_clockwise));
+    count += sizeof(x->counter_clockwise);
+
     x->data_flag = ntohs(x->data_flag);
     x->ack_flag = ntohs(x->ack_flag);
     x->sequence_flag = ntohs(x->sequence_flag);
+    x->clockwise = ntohs(x->clockwise);
+    x->counter_clockwise = ntohs(x->counter_clockwise);
 
     len = nRead - count;
 
@@ -239,15 +254,19 @@ static uint8_t *dp_serialize(const struct data_packet *ackPacket, size_t *size)
     int data_flag_number;
     int ack_flag_number;
     int sequence_flag_number;
+    int clockwise;
+    int counter_clockwise;
 
     len = strlen(ackPacket->data);
 
-    *size = sizeof(ackPacket->data_flag) + sizeof(ackPacket->ack_flag) + sizeof(ackPacket->sequence_flag) + len;
+    *size = sizeof(ackPacket->data_flag) + sizeof(ackPacket->ack_flag) + sizeof(ackPacket->sequence_flag) + sizeof(ackPacket->clockwise) + sizeof(ackPacket->counter_clockwise) + len;
     bytes = malloc(*size);
     // Make network byte order
     data_flag_number = htons(ackPacket->data_flag);
     ack_flag_number = htons(ackPacket->ack_flag);
     sequence_flag_number = htons(ackPacket->sequence_flag);
+    clockwise = htons(ackPacket->clockwise);
+    counter_clockwise = htons(ackPacket->counter_clockwise);
 
     count = 0;
 
@@ -260,6 +279,12 @@ static uint8_t *dp_serialize(const struct data_packet *ackPacket, size_t *size)
 
     memcpy(&bytes[count], &sequence_flag_number, sizeof(sequence_flag_number));
     count += sizeof(sequence_flag_number);
+
+    memcpy(&bytes[count], &clockwise, sizeof(clockwise));
+    count += sizeof(clockwise);
+
+    memcpy(&bytes[count], &counter_clockwise, sizeof(counter_clockwise));
+    count += sizeof(counter_clockwise);
 
     memcpy(&bytes[count], ackPacket->data, len);
 
