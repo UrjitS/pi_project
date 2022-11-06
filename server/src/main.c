@@ -118,7 +118,7 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
     printf("Processing packet \n");
 
     // Confirm it is a new packet to be processed before processing.
-    if (dataPacket->data_flag && !dataPacket->ack_flag) {
+    if (dataPacket->data_flag == '1' && dataPacket->ack_flag == '0') {
         if (serverInformation->previous_sequence_number != dataPacket->sequence_flag) {
             // Update server side information.
             serverInformation->previous_sequence_number = dataPacket->sequence_flag;

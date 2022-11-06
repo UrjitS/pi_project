@@ -59,8 +59,8 @@ void copy(int from_fd, int to_fd, struct sockaddr_in server_addr)
         dataPacket.sequence_flag = sequence;
 
         // TODO Set using button
-        dataPacket.clockwise = '0';
-        dataPacket.counter_clockwise = '1';
+        dataPacket.clockwise = '1';
+        dataPacket.counter_clockwise = '0';
 
         // Get data
         buffer[bytesRead-1] = '\0';
