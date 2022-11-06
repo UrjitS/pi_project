@@ -9,6 +9,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <wiringPi.h>
+
+#define MotorPin1       0
+#define MotorPin2       2
+#define MotorEnable     3
 #define BUF_LEN 1024
 #define DEFAULT_PORT 5020
 
@@ -101,6 +106,20 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
             printf("Clock: %d \n", dataPacket->clockwise);
             printf("CClock: %d \n", dataPacket->counter_clockwise);
             printf("Data: %s \n", dataPacket->data);
+
+            if (dataPacket->clockwise) {
+                printf("Clockwise\n");
+                digitalWrite(MotorEnable, HIGH);
+                digitalWrite(MotorPin1, HIGH);
+                digitalWrite(MotorPin2, LOW);
+            }
+
+            if (dataPacket->counter_clockwise) {
+                printf("Anti-clockwise\n");
+                digitalWrite(MotorEnable, HIGH);
+                digitalWrite(MotorPin1, LOW);
+                digitalWrite(MotorPin2, HIGH);
+            }
         }
     }
 
@@ -193,6 +212,7 @@ static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockad
 
     printf("Sent ack\n");
     printf("\n");
+    digitalWrite(MotorEnable, LOW);
 }
 
 /**
