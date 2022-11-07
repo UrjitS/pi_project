@@ -101,13 +101,62 @@ int main(int argc, char *argv[])
                 bytes = dp_serialize(&dataPacket, &size);
                 // Send to server by using Socket FD.
                 write_bytes(opts.fd_in, bytes, size, opts.server_addr);
+                read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+                process_response();
             } else if (digitalRead(RightButtonPin) == 0 && digitalRead(LeftButtonPin) == 1) {
                 // Send Right
+                // Construct data packet before using sento
+                // Data flag set to 1
+                dataPacket.data_flag = 1;
+                // Ack flag set to 0
+                dataPacket.ack_flag = 0;
+                // Alternate sequence number
+                sequence = !sequence;
+                dataPacket.sequence_flag = sequence;
+
+                dataPacket.clockwise = 1;
+                dataPacket.counter_clockwise = 0;
+
+                // Get data
+                buffer[0] = '\0';
+                // Dynamic memory for data to send and fill with what was read into the buffer.
+                dataPacket.data = malloc(BUF_SIZE);
+                dataPacket.data = buffer;
+
+                // Serialize struct
+                bytes = dp_serialize(&dataPacket, &size);
+                // Send to server by using Socket FD.
+                write_bytes(opts.fd_in, bytes, size, opts.server_addr);
+                read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+                process_response();
             } else if (digitalRead(LeftButtonPin) == 0 && digitalRead(RightButtonPin) == 1) {
                 // Send Left
+                // Construct data packet before using sento
+                // Data flag set to 1
+                dataPacket.data_flag = 1;
+                // Ack flag set to 0
+                dataPacket.ack_flag = 0;
+                // Alternate sequence number
+                sequence = !sequence;
+                dataPacket.sequence_flag = sequence;
+
+                dataPacket.clockwise = 0;
+                dataPacket.counter_clockwise = 1;
+
+                // Get data
+                buffer[0] = '\0';
+                // Dynamic memory for data to send and fill with what was read into the buffer.
+                dataPacket.data = malloc(BUF_SIZE);
+                dataPacket.data = buffer;
+
+                // Serialize struct
+                bytes = dp_serialize(&dataPacket, &size);
+                // Send to server by using Socket FD.
+                write_bytes(opts.fd_in, bytes, size, opts.server_addr);
+                read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+                process_response();
             }
-            read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-            process_response();
+
         }
 //        copy(STDIN_FILENO, opts.fd_in,  opts.server_addr);
     }

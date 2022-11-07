@@ -68,14 +68,14 @@ int main(int argc, char *argv[])
     // If server IP is given, run loop to listen to self.
     if(opts.ip_server)
     {
-        if (wiringPiSetup() == -1) {
-            printf("WiringPi failed \n");
-            return EXIT_FAILURE;
-        }
-
-        pinMode(MotorPin1, OUTPUT);
-        pinMode(MotorPin2, OUTPUT);
-        pinMode(MotorEnable, OUTPUT);
+//        if (wiringPiSetup() == -1) {
+//            printf("WiringPi failed \n");
+//            return EXIT_FAILURE;
+//        }
+//
+//        pinMode(MotorPin1, OUTPUT);
+//        pinMode(MotorPin2, OUTPUT);
+//        pinMode(MotorEnable, OUTPUT);
 
         running = 1;
 
@@ -116,19 +116,19 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
             printf("CClock: %d \n", dataPacket->counter_clockwise);
             printf("Data: %s \n", dataPacket->data);
 
-            if (dataPacket->clockwise) {
-                printf("Clockwise\n");
-                digitalWrite(MotorEnable, HIGH);
-                digitalWrite(MotorPin1, HIGH);
-                digitalWrite(MotorPin2, LOW);
-            }
-
-            if (dataPacket->counter_clockwise) {
-                printf("Anti-clockwise\n");
-                digitalWrite(MotorEnable, HIGH);
-                digitalWrite(MotorPin1, LOW);
-                digitalWrite(MotorPin2, HIGH);
-            }
+//            if (dataPacket->clockwise) {
+//                printf("Clockwise\n");
+//                digitalWrite(MotorEnable, HIGH);
+//                digitalWrite(MotorPin1, HIGH);
+//                digitalWrite(MotorPin2, LOW);
+//            }
+//
+//            if (dataPacket->counter_clockwise) {
+//                printf("Anti-clockwise\n");
+//                digitalWrite(MotorEnable, HIGH);
+//                digitalWrite(MotorPin1, LOW);
+//                digitalWrite(MotorPin2, HIGH);
+//            }
         }
     }
 
