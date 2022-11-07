@@ -49,6 +49,9 @@ int main(int argc, char *argv[])
     char *buffer;
     buffer = malloc(BUF_SIZE);
     int sequence = 1;
+    int offCounter = 0;
+    int rightCounter = 0;
+    int leftCounter = 0;
     ssize_t bytesRead;
     uint8_t *bytes;
     size_t size;
@@ -78,83 +81,96 @@ int main(int argc, char *argv[])
         while(running)
         {
             if (digitalRead(RightButtonPin) == 1 && digitalRead(LeftButtonPin) == 1) {
-                // Send Off
-                // Construct data packet before using sento
-                // Data flag set to 1
-                dataPacket.data_flag = 1;
-                // Ack flag set to 0
-                dataPacket.ack_flag = 0;
-                // Alternate sequence number
-                sequence = !sequence;
-                dataPacket.sequence_flag = sequence;
+                offCounter++;
+                if (offCounter == 100) {
+                    // Send Off
+                    // Construct data packet before using sento
+                    // Data flag set to 1
+                    dataPacket.data_flag = 1;
+                    // Ack flag set to 0
+                    dataPacket.ack_flag = 0;
+                    // Alternate sequence number
+                    sequence = !sequence;
+                    dataPacket.sequence_flag = sequence;
 
-                dataPacket.clockwise = 0;
-                dataPacket.counter_clockwise = 0;
+                    dataPacket.clockwise = 0;
+                    dataPacket.counter_clockwise = 0;
 
-                // Get data
-                buffer[0] = '\0';
-                // Dynamic memory for data to send and fill with what was read into the buffer.
-                dataPacket.data = malloc(BUF_SIZE);
-                dataPacket.data = buffer;
+                    // Get data
+                    buffer[0] = '\0';
+                    // Dynamic memory for data to send and fill with what was read into the buffer.
+                    dataPacket.data = malloc(BUF_SIZE);
+                    dataPacket.data = buffer;
 
-                // Serialize struct
-                bytes = dp_serialize(&dataPacket, &size);
-                // Send to server by using Socket FD.
-                write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-                read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                process_response();
+                    // Serialize struct
+                    bytes = dp_serialize(&dataPacket, &size);
+                    // Send to server by using Socket FD.
+                    write_bytes(opts.fd_in, bytes, size, opts.server_addr);
+                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+                    process_response();
+                    offCounter = 0;
+                }
             } else if (digitalRead(RightButtonPin) == 0 && digitalRead(LeftButtonPin) == 1) {
-                // Send Right
-                // Construct data packet before using sento
-                // Data flag set to 1
-                dataPacket.data_flag = 1;
-                // Ack flag set to 0
-                dataPacket.ack_flag = 0;
-                // Alternate sequence number
-                sequence = !sequence;
-                dataPacket.sequence_flag = sequence;
+                rightCounter++;
+                if (rightCounter == 100) {
+                    // Send Right
+                    // Construct data packet before using sento
+                    // Data flag set to 1
+                    dataPacket.data_flag = 1;
+                    // Ack flag set to 0
+                    dataPacket.ack_flag = 0;
+                    // Alternate sequence number
+                    sequence = !sequence;
+                    dataPacket.sequence_flag = sequence;
 
-                dataPacket.clockwise = 1;
-                dataPacket.counter_clockwise = 0;
+                    dataPacket.clockwise = 1;
+                    dataPacket.counter_clockwise = 0;
 
-                // Get data
-                buffer[0] = '\0';
-                // Dynamic memory for data to send and fill with what was read into the buffer.
-                dataPacket.data = malloc(BUF_SIZE);
-                dataPacket.data = buffer;
+                    // Get data
+                    buffer[0] = '\0';
+                    // Dynamic memory for data to send and fill with what was read into the buffer.
+                    dataPacket.data = malloc(BUF_SIZE);
+                    dataPacket.data = buffer;
 
-                // Serialize struct
-                bytes = dp_serialize(&dataPacket, &size);
-                // Send to server by using Socket FD.
-                write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-                read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                process_response();
+                    // Serialize struct
+                    bytes = dp_serialize(&dataPacket, &size);
+                    // Send to server by using Socket FD.
+                    write_bytes(opts.fd_in, bytes, size, opts.server_addr);
+                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+                    process_response();
+                    rightCounter = 0;
+                }
             } else if (digitalRead(LeftButtonPin) == 0 && digitalRead(RightButtonPin) == 1) {
-                // Send Left
-                // Construct data packet before using sento
-                // Data flag set to 1
-                dataPacket.data_flag = 1;
-                // Ack flag set to 0
-                dataPacket.ack_flag = 0;
-                // Alternate sequence number
-                sequence = !sequence;
-                dataPacket.sequence_flag = sequence;
+                leftCounter++;
+                if (leftCounter == 100) {
+                    // Send Left
+                    // Construct data packet before using sento
+                    // Data flag set to 1
+                    dataPacket.data_flag = 1;
+                    // Ack flag set to 0
+                    dataPacket.ack_flag = 0;
+                    // Alternate sequence number
+                    sequence = !sequence;
+                    dataPacket.sequence_flag = sequence;
 
-                dataPacket.clockwise = 0;
-                dataPacket.counter_clockwise = 1;
+                    dataPacket.clockwise = 0;
+                    dataPacket.counter_clockwise = 1;
 
-                // Get data
-                buffer[0] = '\0';
-                // Dynamic memory for data to send and fill with what was read into the buffer.
-                dataPacket.data = malloc(BUF_SIZE);
-                dataPacket.data = buffer;
+                    // Get data
+                    buffer[0] = '\0';
+                    // Dynamic memory for data to send and fill with what was read into the buffer.
+                    dataPacket.data = malloc(BUF_SIZE);
+                    dataPacket.data = buffer;
 
-                // Serialize struct
-                bytes = dp_serialize(&dataPacket, &size);
-                // Send to server by using Socket FD.
-                write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-                read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                process_response();
+                    // Serialize struct
+                    bytes = dp_serialize(&dataPacket, &size);
+                    // Send to server by using Socket FD.
+                    write_bytes(opts.fd_in, bytes, size, opts.server_addr);
+                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+                    process_response();
+                    leftCounter = 0;
+                }
+
             }
 
         }
