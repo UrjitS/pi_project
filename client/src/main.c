@@ -49,9 +49,9 @@ int main(int argc, char *argv[])
     char *buffer;
     buffer = malloc(BUF_SIZE);
     int sequence = 1;
-    int offCounter = 0;
-    int rightCounter = 0;
-    int leftCounter = 0;
+    long offCounter = 0;
+    long rightCounter = 0;
+    long leftCounter = 0;
     ssize_t bytesRead;
     uint8_t *bytes;
     size_t size;
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
         {
             if (digitalRead(RightButtonPin) == 1 && digitalRead(LeftButtonPin) == 1) {
                 offCounter++;
-                if (offCounter == 100) {
+                if (offCounter == 10000000) {
                     // Send Off
                     // Construct data packet before using sento
                     // Data flag set to 1
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
                 }
             } else if (digitalRead(RightButtonPin) == 0 && digitalRead(LeftButtonPin) == 1) {
                 rightCounter++;
-                if (rightCounter == 100) {
+                if (rightCounter == 10000000) {
                     // Send Right
                     // Construct data packet before using sento
                     // Data flag set to 1
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
                 }
             } else if (digitalRead(LeftButtonPin) == 0 && digitalRead(RightButtonPin) == 1) {
                 leftCounter++;
-                if (leftCounter == 100) {
+                if (leftCounter == 10000000) {
                     // Send Left
                     // Construct data packet before using sento
                     // Data flag set to 1
