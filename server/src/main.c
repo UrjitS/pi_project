@@ -68,6 +68,15 @@ int main(int argc, char *argv[])
     // If server IP is given, run loop to listen to self.
     if(opts.ip_server)
     {
+        if (wiringPiSetup() == -1) {
+            printf("WiringPi failed \n");
+            return EXIT_FAILURE;
+        }
+
+        pinMode(MotorPin1, OUTPUT);
+        pinMode(MotorPin2, OUTPUT);
+        pinMode(MotorEnable, OUTPUT);
+
         running = 1;
 
         // Continues loop to keep listening to self.
