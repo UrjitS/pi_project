@@ -1,5 +1,4 @@
-//#include "conversion.h"
-//#include "error.h"
+#include "motor.h"
 #include <arpa/inet.h>
 #include <assert.h>
 #include <netinet/in.h>
@@ -12,9 +11,7 @@
 #include <wiringPi.h>
 #include <pthread.h>
 
-#define MotorPin1       0
-#define MotorPin2       2
-#define MotorEnable     3
+
 #define BUF_LEN 1024
 #define DEFAULT_PORT 5020
 
@@ -56,7 +53,6 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
 static uint8_t *dp_serialize(const struct data_packet *ackPacket, size_t *size);
 static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockaddr_in server_addr);
 static void options_process_close(int result_number);
-void *myThreadFun(void *vargp);
 
 int main(int argc, char *argv[])
 {
@@ -94,21 +90,15 @@ int main(int argc, char *argv[])
     cleanup(&opts, &serverInformation);
     return EXIT_SUCCESS;
 }
-void *myThreadFun(void *vargp)
-{
-    printf("Clockwise\n");
-    digitalWrite(MotorEnable, HIGH);
-    digitalWrite(MotorPin1, HIGH);
-    digitalWrite(MotorPin2, LOW);
-    sleep(1);
-    return NULL;
-}
+
+
 /**
  * Process Packet once it has been deserialized.
  * @param dataPacket Data packet deserialized and sent from another machine.
  * @param serverInformation Pointer to struct for server side information.
  */
 static void process_packet(const struct data_packet * dataPacket, struct server_information * serverInformation) {
+    pthread_t thread_id;
     printf("Processing packet \n");
 
     // Confirm it is a new packet to be processed before processing.
@@ -129,27 +119,17 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
 
             // Create
             if (dataPacket->clockwise == 1 && dataPacket->counter_clockwise == 0) {
-//                printf("Clockwise\n");
-//                digitalWrite(MotorEnable, HIGH);
-//                digitalWrite(MotorPin1, HIGH);
-//                digitalWrite(MotorPin2, LOW);
-//                sleep(1);
-                pthread_t thread_id;
-                printf("Before Thread\n");
-                pthread_create(&thread_id, NULL, myThreadFun, NULL);
+                pthread_create(&thread_id, NULL, moveMotorRight, NULL);
                 pthread_join(thread_id, NULL);
-                printf("After Thread\n");
             }
 
             if (dataPacket->counter_clockwise && dataPacket->clockwise == 0) {
-                printf("Anti-clockwise\n");
-                digitalWrite(MotorEnable, HIGH);
-                digitalWrite(MotorPin1, LOW);
-                digitalWrite(MotorPin2, HIGH);
-                sleep(1);
+                pthread_create(&thread_id, NULL, moveMotorLeft, NULL);
+                pthread_join(thread_id, NULL);
             }
             if (dataPacket->clockwise == 0 && dataPacket->counter_clockwise == 0) {
-                digitalWrite(MotorEnable, LOW);
+                pthread_create(&thread_id, NULL, stopMotor, NULL);
+                pthread_join(thread_id, NULL);
             }
 
         }

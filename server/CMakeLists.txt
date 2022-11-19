@@ -7,12 +7,14 @@ project(udp_server
 
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_FLAGS "-lwiringPi")
+set(CMAKE_C_FLAGS "-lpthread")
 
 set(SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
-set(SOURCE_LIST ${SOURCE_DIR}/main.c ${SOURCE_DIR}/error.c ${SOURCE_DIR}/conversion.c ${SOURCE_DIR}/copy.c)
-set(HEADER_LIST ${INCLUDE_DIR}/conversion.h ${INCLUDE_DIR}/error.h ${INCLUDE_DIR}/copy.h)
+set(SOURCE_LIST ${SOURCE_DIR}/main.c ${SOURCE_DIR}/motor.c)
+set(HEADER_LIST ${INCLUDE_DIR}/motor.h)
 set(SANITIZE FALSE)
+set(CMAKE_C_COMPILER_ID GNU)
 
 add_compile_definitions(_POSIX_C_SOURCE=200809L)
 add_compile_definitions(_XOPEN_SOURCE=700)
