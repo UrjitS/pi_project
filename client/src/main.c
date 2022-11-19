@@ -80,9 +80,10 @@ int main(int argc, char *argv[])
         // Continues loop to keep listening to self.
         while(running)
         {
+
             if (digitalRead(RightButtonPin) == 1 && digitalRead(LeftButtonPin) == 1) {
                 offCounter++;
-                if (offCounter == 10000000) {
+                if (offCounter >= 10000000) {
                     // Send Off
                     // Construct data packet before using sento
                     // Data flag set to 1
@@ -108,11 +109,10 @@ int main(int argc, char *argv[])
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
                     read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
                     process_response();
-                    offCounter = 0;
                 }
             } else if (digitalRead(RightButtonPin) == 0 && digitalRead(LeftButtonPin) == 1) {
                 rightCounter++;
-                if (rightCounter == 10000000) {
+                if (rightCounter >= 10000000) {
                     // Send Right
                     // Construct data packet before using sento
                     // Data flag set to 1
@@ -138,11 +138,10 @@ int main(int argc, char *argv[])
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
                     read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
                     process_response();
-                    rightCounter = 0;
                 }
             } else if (digitalRead(LeftButtonPin) == 0 && digitalRead(RightButtonPin) == 1) {
                 leftCounter++;
-                if (leftCounter == 10000000) {
+                if (leftCounter >= 10000000) {
                     // Send Left
                     // Construct data packet before using sento
                     // Data flag set to 1
@@ -168,13 +167,11 @@ int main(int argc, char *argv[])
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
                     read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
                     process_response();
-                    leftCounter = 0;
                 }
 
             }
 
         }
-//        copy(STDIN_FILENO, opts.fd_in,  opts.server_addr);
     }
 
     // Clean up memory from option struct pointer.
