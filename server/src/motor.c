@@ -6,9 +6,9 @@
 void *moveMotorRight(void *vargp)
 {
     printf("Clockwise\n");
-    digitalWrite(MotorEnable, HIGH);
-    digitalWrite(MotorPin1, HIGH);
-    digitalWrite(MotorPin2, LOW);
+    digitalWrite(RightMotorEnable, HIGH);
+    digitalWrite(RightMotorPin1, HIGH);
+    digitalWrite(RightMotorPin2, LOW);
     sleep(1);
     return NULL;
 }
@@ -16,9 +16,9 @@ void *moveMotorRight(void *vargp)
 void *moveMotorLeft(void *vargp)
 {
     printf("Anti-clockwise\n");
-    digitalWrite(MotorEnable, HIGH);
-    digitalWrite(MotorPin1, LOW);
-    digitalWrite(MotorPin2, HIGH);
+    digitalWrite(RightMotorEnable, HIGH);
+    digitalWrite(RightMotorPin1, LOW);
+    digitalWrite(RightMotorPin2, HIGH);
     sleep(1);
     return NULL;
 }
@@ -26,6 +26,6 @@ void *moveMotorLeft(void *vargp)
 void *stopMotor(void *vargp)
 {
     printf("Stopping\n");
-    digitalWrite(MotorEnable, LOW);
+    digitalWrite(RightMotorEnable, LOW);
     return NULL;
 }

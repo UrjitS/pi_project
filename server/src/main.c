@@ -11,10 +11,8 @@
 #include <wiringPi.h>
 #include <pthread.h>
 
-
 #define BUF_LEN 1024
 #define DEFAULT_PORT 5020
-
 
 struct options
 {
@@ -22,6 +20,7 @@ struct options
     in_port_t server_port;
     int fd_in;
 };
+
 struct server_information
 {
     char * struct_message_data;
@@ -30,7 +29,6 @@ struct server_information
     char * previous_message;
     int previous_sequence_number;
 };
-
 
 struct data_packet {
     int data_flag;
@@ -72,9 +70,9 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        pinMode(MotorPin1, OUTPUT);
-        pinMode(MotorPin2, OUTPUT);
-        pinMode(MotorEnable, OUTPUT);
+        pinMode(RightMotorPin1, OUTPUT);
+        pinMode(RightMotorPin2, OUTPUT);
+        pinMode(RightMotorEnable, OUTPUT);
 
         running = 1;
 
@@ -90,7 +88,6 @@ int main(int argc, char *argv[])
     cleanup(&opts, &serverInformation);
     return EXIT_SUCCESS;
 }
-
 
 /**
  * Process Packet once it has been deserialized.
@@ -110,12 +107,12 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
 
             // Update previous message sent by the other machine.
             memmove(serverInformation->previous_message, dataPacket->data, strlen(dataPacket->data));
-            printf("Data Flag: %d \n", dataPacket->data_flag);
-            printf("Ack: %d \n", dataPacket->ack_flag);
-            printf("Seq: %d \n", dataPacket->sequence_flag);
-            printf("Clock: %d \n", dataPacket->clockwise);
-            printf("CClock: %d \n", dataPacket->counter_clockwise);
-            printf("Data: %s \n", dataPacket->data);
+//            printf("Data Flag: %d \n", dataPacket->data_flag);
+//            printf("Ack: %d \n", dataPacket->ack_flag);
+//            printf("Seq: %d \n", dataPacket->sequence_flag);
+//            printf("Clock: %d \n", dataPacket->clockwise);
+//            printf("CClock: %d \n", dataPacket->counter_clockwise);
+//            printf("Data: %s \n", dataPacket->data);
 
             // Create
             if (dataPacket->clockwise == 1 && dataPacket->counter_clockwise == 0) {
@@ -224,7 +221,6 @@ static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockad
 
     printf("Sent ack\n");
     printf("\n");
-    digitalWrite(MotorEnable, LOW);
 }
 
 /**

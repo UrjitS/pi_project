@@ -1,9 +1,9 @@
 #ifndef UDP_SERVER_MOTOR_H
 #define UDP_SERVER_MOTOR_H
 
-#define MotorPin1       0
-#define MotorPin2       2
-#define MotorEnable     3
+#define RightMotorPin1       0
+#define RightMotorPin2       2
+#define RightMotorEnable     3
 
 void *moveMotorRight(void *vargp);
 void *moveMotorLeft(void *vargp);
