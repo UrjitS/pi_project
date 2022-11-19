@@ -1,5 +1,5 @@
-#include "conversion.h"
-#include "error.h"
+//#include "conversion.h"
+//#include "error.h"
 #include <arpa/inet.h>
 #include <assert.h>
 #include <netinet/in.h>
@@ -387,18 +387,19 @@ static void parse_arguments(int argc, char *argv[], struct options *opts)
             case 'p':
             {
                 printf("Running on port: %s \n", optarg);
-                opts->server_port = parse_port(optarg, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+                //opts->server_port = parse_port(optarg, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
                 break;
             }
             case ':':
             {
-                fatal_message(__FILE__, __func__ , __LINE__, "\"Option requires an operand\"", 5); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+                //fatal_message(__FILE__, __func__ , __LINE__, "\"Option requires an operand\"", 5); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
             }
             case '?':
             {
-                fatal_message(__FILE__, __func__ , __LINE__, "\n\nUnknown Argument Passed: Please use from the following...\n'c' for setting client IP.\n"
-                                                             "'i' for setting server IP.\n"
-                                                             "'p' for port (optional).", 6); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+                //fatal_message(__FILE__, __func__ , __LINE__, "\n\nUnknown Argument Passed: Please use from the following...\n'c' for setting client IP.\n"
+                  //                                           "'i' for setting server IP.\n"
+                     //                                        "'p' for port (optional).", 6); //
+                    //                                         NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
             }
             default:
             {
