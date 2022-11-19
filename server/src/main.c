@@ -116,18 +116,21 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
             printf("CClock: %d \n", dataPacket->counter_clockwise);
             printf("Data: %s \n", dataPacket->data);
 
-            if (dataPacket->clockwise) {
+            if (dataPacket->clockwise == 1 && dataPacket->counter_clockwise == 0) {
                 printf("Clockwise\n");
                 digitalWrite(MotorEnable, HIGH);
                 digitalWrite(MotorPin1, HIGH);
                 digitalWrite(MotorPin2, LOW);
             }
 
-            if (dataPacket->counter_clockwise) {
+            if (dataPacket->counter_clockwise && dataPacket->clockwise == 0) {
                 printf("Anti-clockwise\n");
                 digitalWrite(MotorEnable, HIGH);
                 digitalWrite(MotorPin1, LOW);
                 digitalWrite(MotorPin2, HIGH);
+            }
+            if (dataPacket->clockwise == 0 && dataPacket->counter_clockwise == 0) {
+                digitalWrite(MotorEnable, LOW);
             }
         }
     }
