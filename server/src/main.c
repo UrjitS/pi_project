@@ -17,6 +17,7 @@
 #define BUF_LEN 1024
 #define DEFAULT_PORT 5020
 
+
 struct options
 {
     char *ip_server;
@@ -134,6 +135,7 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
             if (dataPacket->clockwise == 0 && dataPacket->counter_clockwise == 0) {
                 digitalWrite(MotorEnable, LOW);
             }
+
         }
     }
 
