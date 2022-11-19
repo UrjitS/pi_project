@@ -14,6 +14,9 @@
 #define BUF_LEN 1024
 #define DEFAULT_PORT 5020
 
+// cmake -DCMAKE_C_COMPILER="clang" -S . -B build
+// cmake --build build
+
 struct options
 {
     char *ip_server;
