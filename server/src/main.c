@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <wiringPi.h>
+#include <pthread.h>
 
 #define MotorPin1       0
 #define MotorPin2       2
@@ -55,6 +56,7 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
 static uint8_t *dp_serialize(const struct data_packet *ackPacket, size_t *size);
 static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockaddr_in server_addr);
 static void options_process_close(int result_number);
+void *myThreadFun(void *vargp);
 
 int main(int argc, char *argv[])
 {
@@ -92,7 +94,15 @@ int main(int argc, char *argv[])
     cleanup(&opts, &serverInformation);
     return EXIT_SUCCESS;
 }
-
+void *myThreadFun(void *vargp)
+{
+    printf("Clockwise\n");
+    digitalWrite(MotorEnable, HIGH);
+    digitalWrite(MotorPin1, HIGH);
+    digitalWrite(MotorPin2, LOW);
+    sleep(1);
+    return NULL;
+}
 /**
  * Process Packet once it has been deserialized.
  * @param dataPacket Data packet deserialized and sent from another machine.
@@ -117,12 +127,18 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
             printf("CClock: %d \n", dataPacket->counter_clockwise);
             printf("Data: %s \n", dataPacket->data);
 
+            // Create
             if (dataPacket->clockwise == 1 && dataPacket->counter_clockwise == 0) {
-                printf("Clockwise\n");
-                digitalWrite(MotorEnable, HIGH);
-                digitalWrite(MotorPin1, HIGH);
-                digitalWrite(MotorPin2, LOW);
-                sleep(1);
+//                printf("Clockwise\n");
+//                digitalWrite(MotorEnable, HIGH);
+//                digitalWrite(MotorPin1, HIGH);
+//                digitalWrite(MotorPin2, LOW);
+//                sleep(1);
+                pthread_t thread_id;
+                printf("Before Thread\n");
+                pthread_create(&thread_id, NULL, myThreadFun, NULL);
+                pthread_join(thread_id, NULL);
+                printf("After Thread\n");
             }
 
             if (dataPacket->counter_clockwise && dataPacket->clockwise == 0) {
