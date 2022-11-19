@@ -121,6 +121,7 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
                 digitalWrite(MotorEnable, HIGH);
                 digitalWrite(MotorPin1, HIGH);
                 digitalWrite(MotorPin2, LOW);
+                sleep(1);
             }
 
             if (dataPacket->counter_clockwise && dataPacket->clockwise == 0) {
@@ -128,6 +129,7 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
                 digitalWrite(MotorEnable, HIGH);
                 digitalWrite(MotorPin1, LOW);
                 digitalWrite(MotorPin2, HIGH);
+                sleep(1);
             }
             if (dataPacket->clockwise == 0 && dataPacket->counter_clockwise == 0) {
                 digitalWrite(MotorEnable, LOW);
