@@ -116,8 +116,8 @@ int main(int argc, char *argv[])
                     bytes = dp_serialize(&dataPacket, &size);
                     // Send to server by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-                    //read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                    //process_response();
+                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+                    process_response();
                 }
             } else if (digitalRead(RightButtonPin) == 0 && digitalRead(LeftButtonPin) == 1) {
                 rightCounter++;
@@ -145,8 +145,8 @@ int main(int argc, char *argv[])
                     bytes = dp_serialize(&dataPacket, &size);
                     // Send to server by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-//                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-//                    process_response();
+                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+                    process_response();
                 }
             } else if (digitalRead(LeftButtonPin) == 0 && digitalRead(RightButtonPin) == 1) {
                 leftCounter++;
@@ -174,8 +174,8 @@ int main(int argc, char *argv[])
                     bytes = dp_serialize(&dataPacket, &size);
                     // Send to server by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-//                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-//                    process_response();
+                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+                    process_response();
                 }
 
             }
