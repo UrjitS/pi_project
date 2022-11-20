@@ -1,5 +1,4 @@
 #include "conversion.h"
-#include "copy.h"
 #include "error.h"
 #include <arpa/inet.h>
 #include <assert.h>
@@ -17,6 +16,16 @@
 #define LeftButtonPin 0
 #define BUF_SIZE 1024
 #define DEFAULT_PORT 5020
+
+// Custom struct for confirmation and sequence between client/server.
+struct data_packet {
+    int data_flag;
+    int ack_flag;
+    int sequence_flag;
+    int clockwise;
+    int counter_clockwise;
+    char *data;
+};
 
 // Tracking Ip and port information for client and ser server.
 struct options
@@ -107,8 +116,8 @@ int main(int argc, char *argv[])
                     bytes = dp_serialize(&dataPacket, &size);
                     // Send to server by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                    process_response();
+                    //read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+                    //process_response();
                 }
             } else if (digitalRead(RightButtonPin) == 0 && digitalRead(LeftButtonPin) == 1) {
                 rightCounter++;
@@ -136,8 +145,8 @@ int main(int argc, char *argv[])
                     bytes = dp_serialize(&dataPacket, &size);
                     // Send to server by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                    process_response();
+//                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+//                    process_response();
                 }
             } else if (digitalRead(LeftButtonPin) == 0 && digitalRead(RightButtonPin) == 1) {
                 leftCounter++;
@@ -165,8 +174,8 @@ int main(int argc, char *argv[])
                     bytes = dp_serialize(&dataPacket, &size);
                     // Send to server by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                    process_response();
+//                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
+//                    process_response();
                 }
 
             }
