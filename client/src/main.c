@@ -461,7 +461,7 @@ static void options_process(struct options *opts)
 
         // Setting wait time for data packet exchange.
         struct timeval timeout;
-        timeout.tv_sec = 10;
+        timeout.tv_sec = 5;
         timeout.tv_usec = 0;
 
         // Setting socket options for initiated socket FD and its reception/send time.
