@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
     buffer = malloc(BUF_SIZE);
     int sequence = 1;
     long offCounter = 0;
-    long rightCounter = 1000000;
-    long leftCounter = 1000000;
+    long rightCounter = 10000000;
+    long leftCounter = 10000000;
     ssize_t bytesRead;
     uint8_t *bytes;
     size_t size;
