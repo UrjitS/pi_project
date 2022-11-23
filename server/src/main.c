@@ -77,6 +77,12 @@ int main(int argc, char *argv[])
         pinMode(RightMotorPin2, OUTPUT);
         pinMode(RightMotorEnable, OUTPUT);
 
+
+//        pinMode(LeftMotorPin1, OUTPUT);
+//        pinMode(LeftMotorPin2, OUTPUT);
+//        pinMode(LeftMotorEnable, OUTPUT);
+
+
         running = 1;
 
         // Continues loop to keep listening to self.

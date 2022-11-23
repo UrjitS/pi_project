@@ -37,9 +37,9 @@ void *moveMotorRight(void *vargp)
     digitalWrite(RightMotorPin1, HIGH);
     digitalWrite(RightMotorPin2, LOW);
 
-    digitalWrite(LeftMotorEnable, HIGH);
-    digitalWrite(LeftMotorPin1, HIGH);
-    digitalWrite(LeftMotorPin2, LOW);
+//    digitalWrite(LeftMotorEnable, HIGH);
+//    digitalWrite(LeftMotorPin1, HIGH);
+//    digitalWrite(LeftMotorPin2, LOW);
     mSleep(10);
     return NULL;
 }
@@ -51,9 +51,9 @@ void *moveMotorLeft(void *vargp)
     digitalWrite(RightMotorPin1, LOW);
     digitalWrite(RightMotorPin2, HIGH);
 
-    digitalWrite(LeftMotorEnable, HIGH);
-    digitalWrite(LeftMotorPin1, LOW);
-    digitalWrite(LeftMotorPin2, HIGH);
+//    digitalWrite(LeftMotorEnable, HIGH);
+//    digitalWrite(LeftMotorPin1, LOW);
+//    digitalWrite(LeftMotorPin2, HIGH);
     mSleep(10);
     return NULL;
 }
@@ -62,6 +62,6 @@ void *stopMotor(void *vargp)
 {
     printf("Stopping\n");
     digitalWrite(RightMotorEnable, LOW);
-    digitalWrite(LeftMotorEnable, LOW);
+//    digitalWrite(LeftMotorEnable, LOW);
     return NULL;
 }
