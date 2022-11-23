@@ -44,7 +44,7 @@ static void parse_arguments(int argc, char *argv[], struct options *opts);
 static void options_process(struct options *opts);
 static void cleanup(const struct options *opts);
 static uint8_t *dp_serialize(const struct data_packet *x, size_t *size);
-static struct data_packet *dp_deserialize(ssize_t nRead, char * data_buffer);
+static struct data_packet *dp_deserialize(char *data_buffer);
 static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockaddr_in server_addr);
 static struct data_packet * read_bytes(int fd, const uint8_t *bytes, size_t size, struct sockaddr_in server_addr, int seq);
 static void process_response(void);
@@ -61,7 +61,6 @@ int main(int argc, char *argv[])
     long offCounter = 0;
     long rightCounter = 10000000;
     long leftCounter = 10000000;
-    ssize_t bytesRead;
     uint8_t *bytes;
     size_t size;
 
@@ -246,7 +245,7 @@ static struct data_packet * read_bytes(int fd, const uint8_t *bytes, size_t size
     }
 
     // Return the data packet from the serialized information sent over.
-    struct data_packet * dataPacket = dp_deserialize(nRead, data);
+    struct data_packet * dataPacket = dp_deserialize(data);
     if (dataPacket->sequence_flag != seq) {
         read_bytes(fd, bytes, size, server_addr, seq);
     }
@@ -310,37 +309,36 @@ static uint8_t *dp_serialize(const struct data_packet *x, size_t *size)
 
 /**
  * Deserialize the data packet received.
- * @param nRead Number of bytes to read.
  * @param data_buffer Data  buffer to read from.
  * @return
  */
-static struct data_packet *dp_deserialize(ssize_t nRead, char * data_buffer)
+static struct data_packet *dp_deserialize(char *data_buffer)
 {
-    struct data_packet * dataPacketRecieved = malloc(sizeof(struct data_packet));
+    struct data_packet * pDataPacket = malloc(sizeof(struct data_packet));
     size_t count;
 
-    memset(dataPacketRecieved, 0, sizeof(struct data_packet));
+    memset(pDataPacket, 0, sizeof(struct data_packet));
     count = 0;
 
-    memcpy(&dataPacketRecieved->data_flag, &data_buffer[count], sizeof(dataPacketRecieved->data_flag));
-    count += sizeof(dataPacketRecieved->data_flag);
+    memcpy(&pDataPacket->data_flag, &data_buffer[count], sizeof(pDataPacket->data_flag));
+    count += sizeof(pDataPacket->data_flag);
 
-    memcpy(&dataPacketRecieved->ack_flag, &data_buffer[count], sizeof(dataPacketRecieved->ack_flag));
-    count += sizeof(dataPacketRecieved->ack_flag);
+    memcpy(&pDataPacket->ack_flag, &data_buffer[count], sizeof(pDataPacket->ack_flag));
+    count += sizeof(pDataPacket->ack_flag);
 
-    memcpy(&dataPacketRecieved->sequence_flag, &data_buffer[count], sizeof(dataPacketRecieved->sequence_flag));
+    memcpy(&pDataPacket->sequence_flag, &data_buffer[count], sizeof(pDataPacket->sequence_flag));
 
-    memcpy(&dataPacketRecieved->clockwise, &data_buffer[count], sizeof(dataPacketRecieved->clockwise));
+    memcpy(&pDataPacket->clockwise, &data_buffer[count], sizeof(pDataPacket->clockwise));
 
-    memcpy(&dataPacketRecieved->counter_clockwise, &data_buffer[count], sizeof(dataPacketRecieved->counter_clockwise));
+    memcpy(&pDataPacket->counter_clockwise, &data_buffer[count], sizeof(pDataPacket->counter_clockwise));
 
-    dataPacketRecieved->data_flag = ntohs(dataPacketRecieved->data_flag);
-    dataPacketRecieved->ack_flag = ntohs(dataPacketRecieved->ack_flag);
-    dataPacketRecieved->sequence_flag = ntohs(dataPacketRecieved->sequence_flag);
-    dataPacketRecieved->clockwise = ntohs(dataPacketRecieved->clockwise);
-    dataPacketRecieved->counter_clockwise = ntohs(dataPacketRecieved->counter_clockwise);
+    pDataPacket->data_flag = ntohs(pDataPacket->data_flag);
+    pDataPacket->ack_flag = ntohs(pDataPacket->ack_flag);
+    pDataPacket->sequence_flag = ntohs(pDataPacket->sequence_flag);
+    pDataPacket->clockwise = ntohs(pDataPacket->clockwise);
+    pDataPacket->counter_clockwise = ntohs(pDataPacket->counter_clockwise);
 
-    return dataPacketRecieved;
+    return pDataPacket;
 }
 
 

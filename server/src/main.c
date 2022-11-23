@@ -110,12 +110,7 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
 
             // Update previous message sent by the other machine.
             memmove(serverInformation->previous_message, dataPacket->data, strlen(dataPacket->data));
-//            printf("Data Flag: %d \n", dataPacket->data_flag);
-//            printf("Ack: %d \n", dataPacket->ack_flag);
-//            printf("Seq: %d \n", dataPacket->sequence_flag);
-//            printf("Clock: %d \n", dataPacket->clockwise);
-//            printf("CClock: %d \n", dataPacket->counter_clockwise);
-//            printf("Data: %s \n", dataPacket->data);
+
 
             // Create
             if (dataPacket->clockwise == 1 && dataPacket->counter_clockwise == 0) {
@@ -350,7 +345,7 @@ static void parse_arguments(int argc, char *argv[], struct options *opts)
 {
     int c;
 
-    while((c = getopt(argc, argv, ":i:p:")) != -1)   // NOLINT(concurrency-mt-unsafe)
+    while((c = getopt(argc, argv, ":i:")) != -1)   // NOLINT(concurrency-mt-unsafe)
     {
         switch(c)
         {
@@ -363,22 +358,13 @@ static void parse_arguments(int argc, char *argv[], struct options *opts)
                 opts->ip_server = optarg;
                 break;
             }
-            case 'p':
-            {
-                printf("Running on port: %s \n", optarg);
-                //opts->server_port = parse_port(optarg, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-                break;
-            }
             case ':':
             {
-                //fatal_message(__FILE__, __func__ , __LINE__, "\"Option requires an operand\"", 5); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+                printf("Option requires an operand\n");
             }
             case '?':
             {
-                //fatal_message(__FILE__, __func__ , __LINE__, "\n\nUnknown Argument Passed: Please use from the following...\n'c' for setting client IP.\n"
-                  //                                           "'i' for setting server IP.\n"
-                     //                                        "'p' for port (optional).", 6); //
-                    //                                         NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+                printf("Unknown Argument Passed: Please use from the following...\n '-c' for setting the client IP.\n '-o' for setting the server IP\n");
             }
             default:
             {
