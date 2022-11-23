@@ -50,10 +50,6 @@ void *moveMotorLeft(void *vargp)
     digitalWrite(RightMotorEnable, HIGH);
     digitalWrite(RightMotorPin1, LOW);
     digitalWrite(RightMotorPin2, HIGH);
-
-//    digitalWrite(LeftMotorEnable, HIGH);
-//    digitalWrite(LeftMotorPin1, LOW);
-//    digitalWrite(LeftMotorPin2, HIGH);
     mSleep(10);
     return NULL;
 }
