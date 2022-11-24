@@ -73,14 +73,14 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        pinMode(RightMotorPin1, OUTPUT);
-        pinMode(RightMotorPin2, OUTPUT);
-        pinMode(RightMotorEnable, OUTPUT);
+//        pinMode(RightMotorPin1, OUTPUT);
+//        pinMode(RightMotorPin2, OUTPUT);
+//        pinMode(RightMotorEnable, OUTPUT);
 
 
-//        pinMode(LeftMotorPin1, OUTPUT);
-//        pinMode(LeftMotorPin2, OUTPUT);
-//        pinMode(LeftMotorEnable, OUTPUT);
+        pinMode(LeftMotorPin1, OUTPUT);
+        pinMode(LeftMotorPin2, OUTPUT);
+        pinMode(LeftMotorEnable, OUTPUT);
 
 
         running = 1;
