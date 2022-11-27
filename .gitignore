@@ -1,8 +1,6 @@
 # Project exclude paths
-/client/cmake-build-debug/
-/server/cmake-build-debug/
-/proxy/cmake-build-debug/
+/car_controller/cmake-build-debug/
+/car_motors/cmake-build-debug/
 
-/client/.idea/
-/server/.idea/
-/proxy/.idea/
+/car_controller/.idea/
+/car_motors/.idea/

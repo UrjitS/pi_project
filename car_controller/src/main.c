@@ -17,7 +17,7 @@
 #define BUF_SIZE 1024
 #define DEFAULT_PORT 5020
 
-// Custom struct for confirmation and sequence between client/server.
+// Custom struct for confirmation and sequence between car_controller/car_motors.
 struct data_packet {
     int data_flag;
     int ack_flag;
@@ -27,7 +27,7 @@ struct data_packet {
     char *data;
 };
 
-// Tracking Ip and port information for client and ser server.
+// Tracking Ip and port information for car_controller and ser car_motors.
 struct options
 {
     char *ip_client;
@@ -66,13 +66,13 @@ int main(int argc, char *argv[])
 
     memset(&dataPacket, 0, sizeof(struct data_packet)); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
-    // Initiating, parsing, and processing option struct for client/server information.
+    // Initiating, parsing, and processing option struct for car_controller/car_motors information.
     options_init(&opts);
     parse_arguments(argc, argv, &opts);
     // option processing is also when socket connection is made.
     options_process(&opts);
 
-    // If valid information for client and sever, send data to server.
+    // If valid information for car_controller and sever, send data to car_motors.
     if(opts.ip_client && opts.ip_receiver)
     {
         if (wiringPiSetup() == -1) {
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 
                     // Serialize struct
                     bytes = dp_serialize(&dataPacket, &size);
-                    // Send to server by using Socket FD.
+                    // Send to car_motors by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
                     read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
                     process_response();
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 
                     // Serialize struct
                     bytes = dp_serialize(&dataPacket, &size);
-                    // Send to server by using Socket FD.
+                    // Send to car_motors by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
                     read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
                     process_response();
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 
                     // Serialize struct
                     bytes = dp_serialize(&dataPacket, &size);
-                    // Send to server by using Socket FD.
+                    // Send to car_motors by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
                     read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
                     process_response();
@@ -193,14 +193,14 @@ int main(int argc, char *argv[])
  * @param fd Socket FD.
  * @param bytes the bytes to read.
  * @param size the size of bytes to read.
- * @param server_addr Network address of the server to send to.
+ * @param server_addr Network address of the car_motors to send to.
  */
 static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockaddr_in server_addr)
 {
 
     ssize_t nWrote;
 
-    // Sending the data to server machine.
+    // Sending the data to car_motors machine.
     nWrote = sendto(fd, bytes, size, 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
     options_process_close(nWrote);
@@ -223,7 +223,7 @@ static void process_response(void) {
  * @param fd Socket FD.
  * @param bytes The bytes to read.
  * @param size the size of bytes to read.
- * @param server_addr the network address of the server.
+ * @param server_addr the network address of the car_motors.
  * @return Data packet pointer of deserialized packet.
  */
 static struct data_packet * read_bytes(int fd, const uint8_t *bytes, size_t size, struct sockaddr_in server_addr, int seq)
@@ -253,9 +253,9 @@ static struct data_packet * read_bytes(int fd, const uint8_t *bytes, size_t size
 
 /**
  * Serialize the data packet.
- * @param x Pointer to the data packet to send to server.
+ * @param x Pointer to the data packet to send to car_motors.
  * @param size Size of the data packet.
- * @return Serialized data packet to send to server.
+ * @return Serialized data packet to send to car_motors.
  */
 static uint8_t *dp_serialize(const struct data_packet *x, size_t *size)
 {
@@ -285,7 +285,7 @@ static uint8_t *dp_serialize(const struct data_packet *x, size_t *size)
 
     count = 0;
 
-    // Writing of serialized sequence to be sent over to server. Includes
+    // Writing of serialized sequence to be sent over to car_motors. Includes
     // the ACK, SEQ, and Data to be sent over.
     memcpy(&bytes[count], &data_flag_number, sizeof(data_flag_number));
     count += sizeof(data_flag_number);
@@ -374,7 +374,7 @@ static void parse_arguments(int argc, char *argv[], struct options *opts)
         switch(c)
         {
 
-            // For setting IP of client.
+            // For setting IP of car_controller.
             case 'c':
             {
                 if (inet_addr(optarg) == ( in_addr_t)(-1)) {
@@ -385,7 +385,7 @@ static void parse_arguments(int argc, char *argv[], struct options *opts)
                 break;
             }
 
-            // For setting IP of server.
+            // For setting IP of car_motors.
             case 'o':
             {
                 if (inet_addr(optarg) == ( in_addr_t)(-1)) {
@@ -408,7 +408,7 @@ static void parse_arguments(int argc, char *argv[], struct options *opts)
             }
             case '?':
             {
-                fatal_message(__FILE__, __func__ , __LINE__, "\n\nUnknown Argument Passed: Please use from the following...\n'c' for setting client IP.\n"
+                fatal_message(__FILE__, __func__ , __LINE__, "\n\nUnknown Argument Passed: Please use from the following...\n'c' for setting car_controller IP.\n"
                                                              "'o' for setting output IP.\n"
                                                              "'p' for port (optional).", 6); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
             }
@@ -422,18 +422,18 @@ static void parse_arguments(int argc, char *argv[], struct options *opts)
 }
 
 /**
- * Process the option struct with client/server information.
+ * Process the option struct with car_controller/car_motors information.
  * @param opts
  */
 static void options_process(struct options *opts)
 {
 
-    // Only process if valid IP for client is given.
+    // Only process if valid IP for car_controller is given.
     if(opts->ip_client)
     {
         errno = 0;
 
-        // Special address types for holding client and server addresses.
+        // Special address types for holding car_controller and car_motors addresses.
         struct sockaddr_in addr;
         struct sockaddr_in to_addr;
         int bindResult;
@@ -444,10 +444,10 @@ static void options_process(struct options *opts)
         // Error check creation of socket FD.
         options_process_close(opts->fd_in);
 
-        // Setting up the client address information for connecting over the network.
+        // Setting up the car_controller address information for connecting over the network.
         addr.sin_family = AF_INET;
         addr.sin_port = htons(DEFAULT_PORT);
-        // convert char dot notation of client IP to network bytes.
+        // convert char dot notation of car_controller IP to network bytes.
         addr.sin_addr.s_addr = inet_addr(opts->ip_client);
 
         // check for error when getting network byte from Client IP.
@@ -475,13 +475,13 @@ static void options_process(struct options *opts)
         options_process_close(bindResult);
 
 
-        // Setting address information for server side.
+        // Setting address information for car_motors side.
         to_addr.sin_family = AF_INET;
         to_addr.sin_port = htons(opts->port_receiver);
         // convert char dot notation of destination IP to network bytes.
         to_addr.sin_addr.s_addr = inet_addr(opts->ip_receiver);
 
-        // If server IP could not be converted to network bytes, print error message and leave program.
+        // If car_motors IP could not be converted to network bytes, print error message and leave program.
         if(to_addr.sin_addr.s_addr ==  (in_addr_t)-1)
         {
             options_process_close(-1);
@@ -493,7 +493,7 @@ static void options_process(struct options *opts)
 
 /**
  * Close Socket FD.
- * @param opts pointer to option struct containing client/server address information.
+ * @param opts pointer to option struct containing car_controller/car_motors address information.
  */
 static void cleanup(const struct options *opts)
 {

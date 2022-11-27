@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     parse_arguments(argc, argv, &opts);
     options_process(&opts);
 
-    // If server IP is given, run loop to listen to self.
+    // If car_motors IP is given, run loop to listen to self.
     if(opts.ip_server)
     {
         if (wiringPiSetup() == -1) {
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 /**
  * Process Packet once it has been deserialized.
  * @param dataPacket Data packet deserialized and sent from another machine.
- * @param serverInformation Pointer to struct for server side information.
+ * @param serverInformation Pointer to struct for car_motors side information.
  */
 static void process_packet(const struct data_packet * dataPacket, struct server_information * serverInformation) {
     pthread_t thread_id;
@@ -110,7 +110,7 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
     // Confirm it is a new packet to be processed before processing.
     if (dataPacket->data_flag && !dataPacket->ack_flag) {
         if (serverInformation->previous_sequence_number != dataPacket->sequence_flag) {
-            // Update server side information.
+            // Update car_motors side information.
             serverInformation->previous_sequence_number = dataPacket->sequence_flag;
             serverInformation->previous_message = malloc(strlen(dataPacket->data));
 
@@ -141,13 +141,13 @@ static void process_packet(const struct data_packet * dataPacket, struct server_
 /**
  * Send ACK to other machine to confirm their data packet was delivered.
  * @param dataPacket Data packet that was received.
- * @param from_addr The client's IP address.
+ * @param from_addr The car_controller's IP address.
  * @param fd Socket FD.
  */
 static void send_ack_packet(const struct data_packet * dataPacket, struct sockaddr * from_addr, int fd) {
     uint8_t * bytes;
     size_t size;
-    // Send Ack back to the server
+    // Send Ack back to the car_motors
     struct data_packet acknowledgement_packet;
     memset(&acknowledgement_packet, 0, sizeof(struct data_packet)); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     // Construct acknowledgement packet before sending
@@ -181,7 +181,7 @@ static void send_ack_packet(const struct data_packet * dataPacket, struct sockad
 /**
  * Read data sent from another machine.
  * @param fd the Socket FD.
- * @param serverInformation Struct for holding serialized data and client information.
+ * @param serverInformation Struct for holding serialized data and car_controller information.
  */
 static void read_bytes(int fd, struct server_information * serverInformation)
 {
@@ -274,7 +274,7 @@ static struct data_packet *dp_deserialize(ssize_t nRead, char * data_buffer)
 
 /**
  * Serialize data packet to be sent to another machine.
- * @param ackPacket ACK packet to send pack to client.
+ * @param ackPacket ACK packet to send pack to car_controller.
  * @param size size of serialized information.
  * @return Serialized data packet.
  */
@@ -324,13 +324,13 @@ static uint8_t *dp_serialize(const struct data_packet *ackPacket, size_t *size)
 }
 
 /**
- * Initiate option and server information structs.
+ * Initiate option and car_motors information structs.
  * @param opts pointer to option struct.
- * @param serverInformation  pointer to server information struct.
+ * @param serverInformation  pointer to car_motors information struct.
  */
 static void options_init(struct options *opts, struct server_information *serverInformation)
 {
-    //Dynamic memory for option ans server information structs.
+    //Dynamic memory for option ans car_motors information structs.
     memset(opts, 0, sizeof(struct options)); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     memset(serverInformation, 0, sizeof(struct server_information)); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     serverInformation->previous_sequence_number = 1;
@@ -370,7 +370,7 @@ static void parse_arguments(int argc, char *argv[], struct options *opts)
             }
             case '?':
             {
-                printf("Unknown Argument Passed: Please use from the following...\n '-c' for setting the client IP.\n '-o' for setting the server IP\n");
+                printf("Unknown Argument Passed: Please use from the following...\n '-c' for setting the car_controller IP.\n '-o' for setting the car_motors IP\n");
             }
             default:
             {

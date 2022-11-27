@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(udp_client
+project(car_controller
         VERSION 0.0.1
         DESCRIPTION ""
         LANGUAGES C)
@@ -103,7 +103,7 @@ set(DOXYGEN_QUIET YES)
 doxygen_add_docs(doxygen
         ${HEADER_LIST}
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        COMMENT "Generating Doxygen documentation for udp_client")
+        COMMENT "Generating Doxygen documentation for car_controller")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CLANG_TIDY_CHECKS "*")
@@ -128,5 +128,5 @@ set(CLANG_TIDY_CHECKS "${CLANG_TIDY_CHECKS},-clang-analyzer-security.insecureAPI
 set(CLANG_TIDY_CHECKS "${CLANG_TIDY_CHECKS},-android-cloexec-accept")
 set(CMAKE_C_CLANG_TIDY clang-tidy -checks=${CLANG_TIDY_CHECKS};--quiet)
 
-add_executable(udp_client ${SOURCE_LIST})
-add_dependencies(udp_client doxygen)
+add_executable(car_controller ${SOURCE_LIST})
+add_dependencies(car_controller doxygen)
