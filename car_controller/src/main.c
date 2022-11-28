@@ -1,4 +1,3 @@
-#include "conversion.h"
 #include "error.h"
 #include <arpa/inet.h>
 #include <assert.h>
@@ -27,7 +26,7 @@ struct data_packet {
     char *data;
 };
 
-// Tracking Ip and port information for car_controller and ser car_motors.
+// Tracking Ip and port information for car_controller and car_motors.
 struct options
 {
     char *ip_client;
@@ -47,7 +46,6 @@ static uint8_t *dp_serialize(const struct data_packet *x, size_t *size);
 static struct data_packet *dp_deserialize(char *data_buffer);
 static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockaddr_in server_addr);
 static struct data_packet * read_bytes(int fd, const uint8_t *bytes, size_t size, struct sockaddr_in server_addr, int seq);
-static void process_response(void);
 
 
 int main(int argc, char *argv[])
@@ -59,8 +57,8 @@ int main(int argc, char *argv[])
     buffer = malloc(BUF_SIZE);
     int sequence = 1;
     long offCounter = 0;
-    long rightCounter = 10000000;
-    long leftCounter = 10000000;
+    long rightCounter = 10000;
+    long leftCounter = 10000;
     uint8_t *bytes;
     size_t size;
 
@@ -88,10 +86,11 @@ int main(int argc, char *argv[])
         // Continues loop to keep listening to self.
         while(running)
         {
-
+            // Turn motors off if neither buttons are pressed
             if (digitalRead(RightButtonPin) == 1 && digitalRead(LeftButtonPin) == 1) {
                 offCounter++;
-                if (offCounter >= 10000000) {
+                if (offCounter >= 100000) {
+                    printf("Sending Off command\n");
                     // Send Off
                     // Construct data packet before using sento
                     // Data flag set to 1
@@ -105,7 +104,6 @@ int main(int argc, char *argv[])
                     dataPacket.clockwise = 0;
                     dataPacket.counter_clockwise = 0;
 
-                    // Get data
                     buffer[0] = '\0';
                     // Dynamic memory for data to send and fill with what was read into the buffer.
                     dataPacket.data = malloc(BUF_SIZE);
@@ -116,11 +114,11 @@ int main(int argc, char *argv[])
                     // Send to car_motors by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
                     read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                    process_response();
                 }
             } else if (digitalRead(RightButtonPin) == 0 && digitalRead(LeftButtonPin) == 1) {
                 rightCounter++;
-                if (rightCounter >= 10000000) {
+                if (rightCounter >= 100000) {
+                    printf("Sending Clockwise command\n");
                     // Send Right
                     // Construct data packet before using sento
                     // Data flag set to 1
@@ -145,11 +143,11 @@ int main(int argc, char *argv[])
                     // Send to car_motors by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
                     read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                    process_response();
                 }
             } else if (digitalRead(LeftButtonPin) == 0 && digitalRead(RightButtonPin) == 1) {
                 leftCounter++;
-                if (leftCounter >= 10000000) {
+                if (leftCounter >= 100000) {
+                    printf("Sending CounterClockwise command\n");
                     // Send Left
                     // Construct data packet before using sento
                     // Data flag set to 1
@@ -174,7 +172,6 @@ int main(int argc, char *argv[])
                     // Send to car_motors by using Socket FD.
                     write_bytes(opts.fd_in, bytes, size, opts.server_addr);
                     read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                    process_response();
                 }
 
             }
@@ -203,19 +200,9 @@ static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockad
     // Sending the data to car_motors machine.
     nWrote = sendto(fd, bytes, size, 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
-    options_process_close(nWrote);
-
     // Display bytes and ACK/SEQ of packet sent.
     printf("Wrote %ld bytes\n", nWrote);
 
-}
-
-/**
- * Display ACK/SEQ of the data packet sent over.
- * @param dataPacket the data packet to make UDP reliable and hold data.
- */
-static void process_response(void) {
-    printf("Received Ack \n");
 }
 
 /**
@@ -369,7 +356,7 @@ static void parse_arguments(int argc, char *argv[], struct options *opts)
     int c;
 
     // While valid option is passed.
-    while((c = getopt(argc, argv, ":c:o:p:")) != -1)   // NOLINT(concurrency-mt-unsafe)
+    while((c = getopt(argc, argv, ":c:o:")) != -1)   // NOLINT(concurrency-mt-unsafe)
     {
         switch(c)
         {
@@ -396,12 +383,6 @@ static void parse_arguments(int argc, char *argv[], struct options *opts)
                 break;
             }
 
-            // For changing port number.
-            case 'p':
-            {
-                opts->port_receiver = parse_port(optarg, 10); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-                break;
-            }
             case ':':
             {
                 fatal_message(__FILE__, __func__ , __LINE__, "\"Option requires an operand\"", 5); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)

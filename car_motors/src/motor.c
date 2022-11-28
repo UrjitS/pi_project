@@ -32,7 +32,7 @@ int mSleep(long msec)
 
 void *moveMotorRight(void *vargp)
 {
-    printf("Clockwise\n");
+    printf("Turning Clockwise\n");
     digitalWrite(RightMotorEnable, HIGH);
     digitalWrite(RightMotorPin1, HIGH);
     digitalWrite(RightMotorPin2, LOW);
@@ -46,7 +46,7 @@ void *moveMotorRight(void *vargp)
 
 void *moveMotorLeft(void *vargp)
 {
-    printf("Anti-clockwise\n");
+    printf("Turning Anti-clockwise\n");
     digitalWrite(RightMotorEnable, HIGH);
     digitalWrite(RightMotorPin1, LOW);
     digitalWrite(RightMotorPin2, HIGH);
@@ -60,7 +60,7 @@ void *moveMotorLeft(void *vargp)
 
 void *stopMotor(void *vargp)
 {
-    printf("Stopping\n");
+    printf("Turning Stopping\n");
     digitalWrite(RightMotorEnable, LOW);
     digitalWrite(LeftMotorEnable, LOW);
     return NULL;
