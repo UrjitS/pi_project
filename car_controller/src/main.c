@@ -23,7 +23,7 @@ struct data_packet {
     int sequence_flag;
     int clockwise;
     int counter_clockwise;
-    char *data;
+    const char *data;
 };
 
 // Tracking Ip and port information for car_controller and car_motors.
@@ -46,21 +46,19 @@ static uint8_t *dp_serialize(const struct data_packet *x, size_t *size);
 static struct data_packet *dp_deserialize(char *data_buffer);
 static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockaddr_in server_addr);
 static struct data_packet * read_bytes(int fd, const uint8_t *bytes, size_t size, struct sockaddr_in server_addr, int seq);
-
+static void detect_button_change(struct data_packet dataPacket, long * sendCounter, int * sequence, struct options opts);
+static void send_stop_packet(struct data_packet dataPacket, int * sequence, struct options opts);
+static void send_clockwise_packet(struct data_packet dataPacket, int * sequence, struct options opts);
+static void send_counterclockwise_packet(struct data_packet dataPacket, int * sequence, struct options opts);
 
 int main(int argc, char *argv[])
 {
     // Initiating our custom struct.
     struct options opts;
     struct data_packet dataPacket;
-    char *buffer;
-    buffer = malloc(BUF_SIZE);
+
     int sequence = 1;
     long offCounter = 0;
-    long rightCounter = 10000;
-    long leftCounter = 10000;
-    uint8_t *bytes;
-    size_t size;
 
     memset(&dataPacket, 0, sizeof(struct data_packet)); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 
@@ -78,104 +76,15 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        pinMode(RightButtonPin, INPUT);
         pinMode(LeftButtonPin, INPUT);
+        pinMode(RightButtonPin, INPUT);
 
         running = 1;
 
         // Continues loop to keep listening to self.
         while(running)
         {
-            // Turn motors off if neither buttons are pressed
-            if (digitalRead(RightButtonPin) == 1 && digitalRead(LeftButtonPin) == 1) {
-                offCounter++;
-                if (offCounter >= 100000) {
-                    printf("Sending Off command\n");
-                    // Send Off
-                    // Construct data packet before using sento
-                    // Data flag set to 1
-                    dataPacket.data_flag = 1;
-                    // Ack flag set to 0
-                    dataPacket.ack_flag = 0;
-                    // Alternate sequence number
-                    sequence = !sequence;
-                    dataPacket.sequence_flag = sequence;
-
-                    dataPacket.clockwise = 0;
-                    dataPacket.counter_clockwise = 0;
-
-                    buffer[0] = '\0';
-                    // Dynamic memory for data to send and fill with what was read into the buffer.
-                    dataPacket.data = malloc(BUF_SIZE);
-                    dataPacket.data = buffer;
-
-                    // Serialize struct
-                    bytes = dp_serialize(&dataPacket, &size);
-                    // Send to car_motors by using Socket FD.
-                    write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                }
-            } else if (digitalRead(RightButtonPin) == 0 && digitalRead(LeftButtonPin) == 1) {
-                rightCounter++;
-                if (rightCounter >= 100000) {
-                    printf("Sending Clockwise command\n");
-                    // Send Right
-                    // Construct data packet before using sento
-                    // Data flag set to 1
-                    dataPacket.data_flag = 1;
-                    // Ack flag set to 0
-                    dataPacket.ack_flag = 0;
-                    // Alternate sequence number
-                    sequence = !sequence;
-                    dataPacket.sequence_flag = sequence;
-
-                    dataPacket.clockwise = 1;
-                    dataPacket.counter_clockwise = 0;
-
-                    // Get data
-                    buffer[0] = '\0';
-                    // Dynamic memory for data to send and fill with what was read into the buffer.
-                    dataPacket.data = malloc(BUF_SIZE);
-                    dataPacket.data = buffer;
-
-                    // Serialize struct
-                    bytes = dp_serialize(&dataPacket, &size);
-                    // Send to car_motors by using Socket FD.
-                    write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                }
-            } else if (digitalRead(LeftButtonPin) == 0 && digitalRead(RightButtonPin) == 1) {
-                leftCounter++;
-                if (leftCounter >= 100000) {
-                    printf("Sending CounterClockwise command\n");
-                    // Send Left
-                    // Construct data packet before using sento
-                    // Data flag set to 1
-                    dataPacket.data_flag = 1;
-                    // Ack flag set to 0
-                    dataPacket.ack_flag = 0;
-                    // Alternate sequence number
-                    sequence = !sequence;
-                    dataPacket.sequence_flag = sequence;
-
-                    dataPacket.clockwise = 0;
-                    dataPacket.counter_clockwise = 1;
-
-                    // Get data
-                    buffer[0] = '\0';
-                    // Dynamic memory for data to send and fill with what was read into the buffer.
-                    dataPacket.data = malloc(BUF_SIZE);
-                    dataPacket.data = buffer;
-
-                    // Serialize struct
-                    bytes = dp_serialize(&dataPacket, &size);
-                    // Send to car_motors by using Socket FD.
-                    write_bytes(opts.fd_in, bytes, size, opts.server_addr);
-                    read_bytes(opts.fd_in, bytes, size, opts.server_addr, sequence);
-                }
-
-            }
-
+            detect_button_change(dataPacket, &offCounter, &sequence, opts);
         }
     }
 
@@ -184,6 +93,112 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
+static void detect_button_change(struct data_packet dataPacket, long * sendCounter, int * sequence, struct options opts) {
+    // Turn motors off if neither buttons are pressed
+    if (digitalRead(RightButtonPin) == 1 && digitalRead(LeftButtonPin) == 1) {
+        (*sendCounter)++;
+        if ((*sendCounter) >= 100000) {
+            printf("Sending Off command\n");
+            send_stop_packet(dataPacket, sequence, opts);
+        }
+    } else if (digitalRead(RightButtonPin) == 0 && digitalRead(LeftButtonPin) == 1) {
+        (*sendCounter)++;
+        if ((*sendCounter) >= 100000) {
+            printf("Sending Clockwise command\n");
+            send_clockwise_packet(dataPacket, sequence, opts);
+        }
+    } else if (digitalRead(LeftButtonPin) == 0 && digitalRead(RightButtonPin) == 1) {
+        (*sendCounter)++;
+        if ((*sendCounter) >= 100000) {
+            printf("Sending CounterClockwise command\n");
+            send_counterclockwise_packet(dataPacket, sequence, opts);
+        }
+    }
+}
+
+static void send_stop_packet(struct data_packet dataPacket, int * sequence, struct options opts) {
+    uint8_t *bytes;
+    size_t size;
+
+    // Send Off
+    // Construct data packet before using sento
+    // Data flag set to 1
+    dataPacket.data_flag = 1;
+    // Ack flag set to 0
+    dataPacket.ack_flag = 0;
+    // Alternate sequence number
+    *sequence = !*sequence;
+    dataPacket.sequence_flag = *sequence;
+
+    dataPacket.clockwise = 0;
+    dataPacket.counter_clockwise = 0;
+
+    // Dynamic memory for data to send and fill with what was read into the buffer.
+    dataPacket.data = malloc(BUF_SIZE);
+    dataPacket.data = "";
+
+    // Serialize struct
+    bytes = dp_serialize(&dataPacket, &size);
+    // Send to car_motors by using Socket FD.
+    write_bytes(opts.fd_in, bytes, size, opts.server_addr);
+    read_bytes(opts.fd_in, bytes, size, opts.server_addr, *sequence);
+}
+
+static void send_clockwise_packet(struct data_packet dataPacket, int * sequence, struct options opts) {
+    uint8_t *bytes;
+    size_t size;
+    // Send Right
+    // Construct data packet before using sento
+    // Data flag set to 1
+    dataPacket.data_flag = 1;
+    // Ack flag set to 0
+    dataPacket.ack_flag = 0;
+    // Alternate sequence number
+    *sequence = !*sequence;
+    dataPacket.sequence_flag = *sequence;
+
+    dataPacket.clockwise = 1;
+    dataPacket.counter_clockwise = 0;
+
+    // Get data
+    // Dynamic memory for data to send and fill with what was read into the buffer.
+    dataPacket.data = malloc(BUF_SIZE);
+    dataPacket.data = "";
+
+    // Serialize struct
+    bytes = dp_serialize(&dataPacket, &size);
+    // Send to car_motors by using Socket FD.
+    write_bytes(opts.fd_in, bytes, size, opts.server_addr);
+    read_bytes(opts.fd_in, bytes, size, opts.server_addr, *sequence);
+}
+
+static void send_counterclockwise_packet(struct data_packet dataPacket, int * sequence, struct options opts) {
+    uint8_t *bytes;
+    size_t size;
+    // Send Left
+    // Construct data packet before using sento
+    // Data flag set to 1
+    dataPacket.data_flag = 1;
+    // Ack flag set to 0
+    dataPacket.ack_flag = 0;
+    // Alternate sequence number
+    *sequence = !*sequence;
+    dataPacket.sequence_flag = *sequence;
+
+    dataPacket.clockwise = 0;
+    dataPacket.counter_clockwise = 1;
+
+    // Get data
+    // Dynamic memory for data to send and fill with what was read into the buffer.
+    dataPacket.data = malloc(BUF_SIZE);
+    dataPacket.data = "";
+
+    // Serialize struct
+    bytes = dp_serialize(&dataPacket, &size);
+    // Send to car_motors by using Socket FD.
+    write_bytes(opts.fd_in, bytes, size, opts.server_addr);
+    read_bytes(opts.fd_in, bytes, size, opts.server_addr, *sequence);
+}
 
 /**
  * For sending by writing to socket FD.
@@ -195,13 +210,11 @@ int main(int argc, char *argv[])
 static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockaddr_in server_addr)
 {
 
-    ssize_t nWrote;
-
     // Sending the data to car_motors machine.
-    nWrote = sendto(fd, bytes, size, 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    sendto(fd, bytes, size, 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
     // Display bytes and ACK/SEQ of packet sent.
-    printf("Wrote %ld bytes\n", nWrote);
+    printf("Sent Packet\n");
 
 }
 
@@ -219,8 +232,9 @@ static struct data_packet * read_bytes(int fd, const uint8_t *bytes, size_t size
     char data[BUF_SIZE];
     ssize_t nRead;
     socklen_t from_addr_len;
-    printf("\n Waiting \n");
     from_addr_len = sizeof (struct sockaddr);
+
+    printf("\n Waiting \n");
 
     // Read from the socket FD and get bytes read.
     nRead = recvfrom(fd, data, BUF_SIZE, 0, &from_addr, &from_addr_len);

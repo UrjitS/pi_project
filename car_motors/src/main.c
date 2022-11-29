@@ -158,8 +158,8 @@ static void send_ack_packet(const struct data_packet * dataPacket, struct sockad
     // Alternate sequence number
     acknowledgement_packet.sequence_flag = dataPacket->sequence_flag;
 
-    acknowledgement_packet.clockwise = -1;
-    acknowledgement_packet.counter_clockwise = -1;
+    acknowledgement_packet.clockwise = 0;
+    acknowledgement_packet.counter_clockwise = 0;
 
     acknowledgement_packet.data = malloc(strlen(dataPacket->data));
     acknowledgement_packet.data = dataPacket->data;
@@ -223,8 +223,7 @@ static void write_bytes(int fd, const uint8_t *bytes, size_t size, struct sockad
         return;
     }
 
-    printf("Sent ack\n");
-    printf("\n");
+    printf("Sent ack\n\n");
 }
 
 /**
@@ -334,9 +333,10 @@ static void options_init(struct options *opts, struct server_information *server
     memset(opts, 0, sizeof(struct options)); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     memset(serverInformation, 0, sizeof(struct server_information)); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     serverInformation->previous_sequence_number = 1;
+
     char d_text[4] = "null";
-//    serverInformation->previous_message = malloc(strlen(d_text));
     serverInformation->previous_message = d_text;
+
     opts->fd_in       = STDIN_FILENO;
     opts->server_port     = DEFAULT_PORT;
 }

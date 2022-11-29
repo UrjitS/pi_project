@@ -10,8 +10,8 @@ set(CMAKE_C_FLAGS "-lwiringPi")
 
 set(SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
-set(SOURCE_LIST ${SOURCE_DIR}/main.c ${SOURCE_DIR}/error.c ${SOURCE_DIR}/conversion.c)
-set(HEADER_LIST ${INCLUDE_DIR}/conversion.h ${INCLUDE_DIR}/error.h )
+set(SOURCE_LIST ${SOURCE_DIR}/main.c ${SOURCE_DIR}/error.c)
+set(HEADER_LIST ${INCLUDE_DIR}/error.h)
 
 set(SANITIZE FALSE)
 
